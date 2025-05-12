@@ -11,12 +11,12 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE SOURCES
+file(GLOB_RECURSE UI_SOURCES
     src/*.cpp
     src/*.hpp
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${UI_SOURCES})
 
 # Link Qt6 libraries once
 target_link_libraries(${PROJECT_NAME} PRIVATE

@@ -1,5 +1,5 @@
 # Chessbot
-A simple chess bot writtent in C++ with a Qt GUI.
+A simple chess bot written in C++ with a Qt GUI.
 
 ![board](./assets/qtboard.png)
 
@@ -14,7 +14,7 @@ make
 ./chess-bot # run the bot
 ```
 ## Requirements
-This application uses Qt GUI; on Debian/Ubuntu:
+This application uses Qt GUI (on Debian/Ubuntu):
 ```
 sudo apt update
 sudo apt-get install build-essential libgl1-mesa-dev
