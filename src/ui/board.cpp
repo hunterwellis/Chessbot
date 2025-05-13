@@ -30,20 +30,27 @@ void Board::paintEvent(QPaintEvent *event){
         }
     }
 
+    // idicator for selected piece
+    painter.setBrush(selectColor);
+    painter.drawRect((selectedPieceOriginalIndex % 8) * squareWidth, (selectedPieceOriginalIndex / 8) * squareHeight, squareWidth, squareHeight);
+
+    int offset = (2 * squareWidth / 5);
+    for (int ind : indicators){
+        painter.drawEllipse((ind % 8) * squareWidth + offset, (ind / 8) * squareHeight + offset, squareWidth / 5, squareHeight / 5);
+    }
+
     // draw pieces
-    int pieceWidth = squareWidth;
-    int pieceHeight = squareHeight;
     for (const auto& piece : pieces){
 
-        int x = piece.col * squareWidth + (squareWidth - pieceWidth) / 2;
-        int y = piece.row * squareHeight + (squareHeight - pieceHeight) / 2;
+        int x = piece.col * squareWidth;
+        int y = piece.row * squareHeight;
 
-        QRect target(x, y, pieceWidth, pieceHeight);
-        painter.drawPixmap(target, piece.pixmap.scaled(pieceWidth, pieceHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        QRect target(x, y, squareWidth, squareHeight);
+        painter.drawPixmap(target, piece.pixmap.scaled(squareWidth, squareHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     // draw dragging piece
-    if (isDragging && !selectedPixmap.isNull()) {
+    if (isDragging && !selectedPixmap.isNull()){
         int pieceWidth = width() / 8;
         int pieceHeight = height() / 8;
 
@@ -54,6 +61,8 @@ void Board::paintEvent(QPaintEvent *event){
     }
 }
 
+// Overrides the board GUI with a given FEN string,
+// also updates the internal board state accordingly.
 void Board::loadFEN(std::string str){
     std::string board = str.substr(0, str.find(" "));
 
@@ -83,6 +92,36 @@ void Board::loadFEN(std::string str){
     }
 }
 
+// Returns a FEN representation of the current Qt board state
+std::string Board::getFEN(){
+    std::string fen = "";
+
+    for(int rank = 0; rank < 8; ++rank){
+        int count = '0';
+        for(int file = 0; file < 8; ++file){
+            int square = state[(rank * 8) + file];
+            char symbol = typeToSymbol(square);
+            if (isdigit(symbol)){
+                count++;
+            }
+            else{
+                if (count > '0'){
+                    fen += count;
+                    count = '0';
+                }
+                symbol = square > 16 ? symbol : toupper(symbol); // check color
+                fen += symbol;
+            }
+        }
+        if (count > '0'){
+            fen += count;
+        }
+        fen += '/';
+    }
+    fen.pop_back();
+    return fen;
+}
+
 int Board::symbolToType(char ch){
     switch (ch){
         case 'p':    return Piece::Pawn;
@@ -91,7 +130,23 @@ int Board::symbolToType(char ch){
         case 'r':    return Piece::Rook;
         case 'q':    return Piece::Queen;
         case 'k':    return Piece::King;
+
         default:     return Piece::None;
+    }
+}
+
+char Board::typeToSymbol(int piece){
+    int type = piece & Piece::PieceMask;
+    switch (type){
+        case Piece::Pawn:      return 'p';
+        case Piece::Knight:    return 'n';
+        case Piece::Bishop:    return 'b';
+        case Piece::Rook:      return 'r';
+        case Piece::Queen:     return 'q';
+        case Piece::King:      return 'k';
+
+        case Piece::None:      return '0';
+        default:               return '0';
     }
 }
 
@@ -121,7 +176,12 @@ QPixmap Board::getPieceImg(int piece){
     return pix;
 }
 
-
+void Board::indicate(std::vector<int> squares){
+    indicators.clear();
+    for (int square : squares){
+        indicators.push_back(square);
+    }
+}
 
 void Board::updateBoard(){
 
@@ -162,6 +222,10 @@ void Board::selectPiece(const QPointF& point){
 
         updateBoard();
     }
+    else {
+        selectedPieceOriginalIndex = -1;
+        updateBoard();
+    }
 }
 
 void Board::placePiece(const QPointF& point){
@@ -172,7 +236,9 @@ void Board::placePiece(const QPointF& point){
         selectedPiece = Piece::None;
         selectedPixmap = QPixmap();
         isDragging = false;
-        selectedPieceOriginalIndex = -1;
+        if (idx != selectedPieceOriginalIndex){
+            selectedPieceOriginalIndex = -1;
+        }
 
         updateBoard();
     }

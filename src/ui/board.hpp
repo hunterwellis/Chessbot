@@ -1,8 +1,10 @@
-#ifndef BOARD_HPP
-#define BOARD_HPP
+#ifndef CHESSBOT_UI_BOARD_HPP_
+#define CHESSBOT_UI_BOARD_HPP_
 
 #include <QWidget>
 #include <QGraphicsScene>
+#include <QVector>
+#include <vector>
 
 #define BOARD_SIZE 512
 
@@ -30,8 +32,10 @@ class Board : public QWidget {
 public:
     explicit Board(QWidget *parent = nullptr);
     void updateBoard();
+    void indicate(std::vector<int> squares);
 
     void loadFEN(std::string str);
+    std::string getFEN();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -42,6 +46,8 @@ protected:
 private:
     // the board state
     int state[64] = { Piece::None };
+    QVector<int> indicators;
+
 
     QPixmap getPieceImg(int piece);
     int getIndex(const QPointF& point);
@@ -50,6 +56,8 @@ private:
     void placePiece(const QPointF& point);
 
     int symbolToType(char ch);
+    char typeToSymbol(int piece);
+    
     // variables for moving/dragging piece
     QPixmap selectedPixmap;
     int selectedPiece = Piece::None;
@@ -66,8 +74,9 @@ private:
 
     QVector<PieceImage> pieces;
 
-    QColor lightColor = QColor(240, 220, 180);
+    QColor lightColor = QColor(240, 220, 160);
     QColor darkColor = QColor(180, 140, 100);
+    QColor selectColor = QColor(180, 180, 180);
 
 };
 
